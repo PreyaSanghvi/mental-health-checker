@@ -17,6 +17,10 @@ benefits = st.selectbox("Does your employer provide mental health benefits?", ['
 
 if st.button("Submit"):
     data = pd.DataFrame([[age, work_interfere, benefits]], columns=['Age', 'work_interfere', 'benefits'])
+    # Example encoding
+data['work_interfere'] = data['work_interfere'].map({'Never': 0, 'Rarely': 1, 'Sometimes': 2, 'Often': 3})
+data['benefits'] = data['benefits'].map({'Yes': 1, 'No': 0, "Don't know": 2})
+
     prediction = model.predict(data)[0]
     st.success(f"Hello {name}, based on your inputs, you are predicted as: **{prediction}**")
     

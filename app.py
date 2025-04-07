@@ -26,8 +26,6 @@ benefits_val = benefits_map[benefits]
 if st.button("Submit"):
     data = pd.DataFrame([[age, work_interfere_val, benefits_val]], 
                         columns=['Age', 'work_interfere', 'benefits'])
-    st.write("Model input preview:")
-st.write(data)
 
     prediction = model.predict(data)[0]
     

@@ -1,94 +1,82 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 
 # Load the trained model
 model = joblib.load("mental_health_model.pkl")
 
-# Set up the Streamlit app
-st.set_page_config(page_title="Mental Health Checker", layout="centered")
-st.title("🧠 Mental Health Stress Detection")
-st.write("Predict if a person is **Stressed** or **Not Stressed** based on their responses.")
+# Define expected column order
+expected_columns = [
+    'Age', 'Gender', 'Occupation', 'Sleep Duration', 'Quality of Sleep',
+    'Physical Activity Level', 'Stress Level', 'Heart Rate', 'Daily Steps',
+    'BMI Category', 'Blood Pressure', 'Daily Screen Time', 'Work-Life Balance',
+    'Self Esteem', 'Family History of Mental Illness', 'Social Support',
+    'AI-Detected Emotional State_Calm', 'AI-Detected Emotional State_Happy',
+    'AI-Detected Emotional State_Sad'
+]
 
-# Input fields
-age = st.slider("Age", 15, 100, 25)
-gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-self_employed = st.selectbox("Are you self-employed?", ["Yes", "No"])
-family_history = st.selectbox("Family history of mental illness?", ["Yes", "No"])
-work_interfere = st.selectbox("Does your mental health interfere with work?", ["Never", "Rarely", "Sometimes", "Often"])
-no_employees = st.selectbox("Company size", ["1-5", "6-25", "26-100", "100-500", "500-1000", "More than 1000"])
-remote_work = st.selectbox("Do you work remotely?", ["Yes", "No"])
-tech_company = st.selectbox("Is it a tech company?", ["Yes", "No"])
-benefits = st.selectbox("Does your employer provide mental health benefits?", ["Yes", "No", "Don't know"])
-care_options = st.selectbox("Are care options available?", ["Yes", "No", "Not sure"])
-wellness_program = st.selectbox("Is there a wellness program?", ["Yes", "No", "Don't know"])
-seek_help = st.selectbox("Does your employer encourage help-seeking?", ["Yes", "No", "Don't know"])
-anonymity = st.selectbox("Is anonymity protected?", ["Yes", "No", "Don't know"])
-leave = st.selectbox("Ease of taking mental health leave", ["Very easy", "Somewhat easy", "Don't know", "Somewhat difficult", "Very difficult"])
-mental_health_consequence = st.selectbox("Consequences of discussing mental health", ["Yes", "No", "Maybe"])
-phys_health_consequence = st.selectbox("Consequences of discussing physical health", ["Yes", "No", "Maybe"])
-coworkers = st.selectbox("Can you talk to coworkers about mental health?", ["Yes", "No", "Some of them"])
-supervisor = st.selectbox("Can you talk to your supervisor?", ["Yes", "No", "Some of them"])
-mental_health_interview = st.selectbox("Willing to discuss mental health in interview?", ["Yes", "No", "Maybe"])
-phys_health_interview = st.selectbox("Willing to discuss physical health in interview?", ["Yes", "No", "Maybe"])
-mental_vs_physical = st.selectbox("Should mental & physical health be treated the same?", ["Yes", "No", "Don't know"])
-obs_consequence = st.selectbox("Seen negative consequences of mental health disclosure?", ["Yes", "No"])
-comments_length = st.slider("Number of words in optional comments", 0, 500, 10)
+st.title("Mental Health Checker")
 
-# Encode inputs (Label Encoding as per your preprocessing)
-mapping = {
-    "Yes": 1, "No": 0, "Other": 2, "Male": 1, "Female": 0,
-    "Don't know": 2, "Not sure": 2, "Maybe": 2, "Some of them": 2,
-    "Never": 0, "Rarely": 1, "Sometimes": 2, "Often": 3,
-    "Very easy": 0, "Somewhat easy": 1, "Don't know": 2,
-    "Somewhat difficult": 3, "Very difficult": 4,
-    "1-5": 0, "6-25": 1, "26-100": 2, "100-500": 3,
-    "500-1000": 4, "More than 1000": 5
-}
+# Collect user inputs
+with st.form("mental_health_form"):
+    age = st.number_input("Age", min_value=1, max_value=100)
+    gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+    occupation = st.selectbox("Occupation", ["Student", "Working Professional", "Unemployed", "Other"])
+    sleep_duration = st.number_input("Sleep Duration (hours)", min_value=0.0, max_value=24.0, step=0.5)
+    quality_sleep = st.slider("Quality of Sleep (1-5)", 1, 5)
+    physical_activity = st.slider("Physical Activity Level (1-5)", 1, 5)
+    stress_level = st.slider("Stress Level (1-10)", 1, 10)
+    heart_rate = st.number_input("Heart Rate", min_value=30, max_value=200)
+    daily_steps = st.number_input("Daily Steps", min_value=0)
+    bmi_category = st.selectbox("BMI Category", ["Underweight", "Normal", "Overweight", "Obese"])
+    blood_pressure = st.selectbox("Blood Pressure", ["Low", "Normal", "High"])
+    screen_time = st.number_input("Daily Screen Time (hours)", min_value=0)
+    work_life = st.selectbox("Work-Life Balance", ["Poor", "Average", "Good"])
+    self_esteem = st.selectbox("Self Esteem", ["Low", "Moderate", "High"])
+    family_history = st.selectbox("Family History of Mental Illness", ["Yes", "No"])
+    social_support = st.selectbox("Social Support", ["Low", "Moderate", "High"])
+    emotional_state = st.selectbox("AI-Detected Emotional State", ["Calm", "Happy", "Sad"])
+    
+    submit = st.form_submit_button("Check My Mental Health")
 
-input_list = [age,
-              mapping.get(gender, 2),
-              mapping[self_employed],
-              mapping[family_history],
-              mapping[work_interfere],
-              mapping[no_employees],
-              mapping[remote_work],
-              mapping[tech_company],
-              mapping[benefits],
-              mapping[care_options],
-              mapping[wellness_program],
-              mapping[seek_help],
-              mapping[anonymity],
-              mapping[leave],
-              mapping[mental_health_consequence],
-              mapping[phys_health_consequence],
-              mapping[coworkers],
-              mapping[supervisor],
-              mapping[mental_health_interview],
-              mapping[phys_health_interview],
-              mapping[mental_vs_physical],
-              mapping[obs_consequence],
-              comments_length
-             ]
+if submit:
+    # Prepare one-hot encoded emotional state
+    emotional_state_dict = {
+        'AI-Detected Emotional State_Calm': 1 if emotional_state == "Calm" else 0,
+        'AI-Detected Emotional State_Happy': 1 if emotional_state == "Happy" else 0,
+        'AI-Detected Emotional State_Sad': 1 if emotional_state == "Sad" else 0
+    }
 
-# Convert input to DataFrame
-columns = ['Age', 'Gender', 'self_employed', 'family_history', 'work_interfere', 
-           'no_employees', 'remote_work', 'tech_company', 'benefits', 'care_options',
-           'wellness_program', 'seek_help', 'anonymity', 'leave', 'mental_health_consequence',
-           'phys_health_consequence', 'coworkers', 'supervisor', 'mental_health_interview',
-           'phys_health_interview', 'mental_vs_physical', 'obs_consequence', 'comments_length']
+    # Combine all user input into a single dictionary
+    input_data = {
+        'Age': age,
+        'Gender': gender,
+        'Occupation': occupation,
+        'Sleep Duration': sleep_duration,
+        'Quality of Sleep': quality_sleep,
+        'Physical Activity Level': physical_activity,
+        'Stress Level': stress_level,
+        'Heart Rate': heart_rate,
+        'Daily Steps': daily_steps,
+        'BMI Category': bmi_category,
+        'Blood Pressure': blood_pressure,
+        'Daily Screen Time': screen_time,
+        'Work-Life Balance': work_life,
+        'Self Esteem': self_esteem,
+        'Family History of Mental Illness': family_history,
+        'Social Support': social_support,
+        **emotional_state_dict
+    }
 
-data = pd.DataFrame([input_list], columns=columns)
+    # Convert input to DataFrame
+    input_df = pd.DataFrame([input_data])
 
-# Predict
-# Predict
-if st.button("Predict"):
-    st.write("Input Data:")
-    st.write(data)
-    st.write("Any NaNs?", data.isnull().sum())
+    # Align with expected model input
+    input_df = input_df.reindex(columns=expected_columns)
+    input_df = input_df.fillna(0)
 
-    prediction = model.predict(data)[0]
-    result = "Stressed" if prediction == 1 else "Not Stressed"
-    st.success(f"🧾 Prediction: The person is **{result}**.")
+    # Make prediction
+    prediction = model.predict(input_df)[0]
+
+    st.success(f"Predicted Mental Health State: **{prediction}**")
 

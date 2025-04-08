@@ -6,14 +6,20 @@ import joblib
 model = joblib.load("mental_health_model.pkl")
 
 # Define expected column order (same as during training)
-expected_columns = [
-    'Age', 'Gender', 'Occupation', 'Sleep Duration', 'Quality of Sleep',
-    'Physical Activity Level', 'Stress Level', 'Heart Rate', 'Daily Steps',
-    'BMI Category', 'Blood Pressure', 'Daily Screen Time', 'Work-Life Balance',
-    'Self Esteem', 'Family History of Mental Illness', 'Social Support',
-    'AI-Detected Emotional State_Calm', 'AI-Detected Emotional State_Happy',
-    'AI-Detected Emotional State_Sad'
-]
+expected_columns = ['Age' 'Symptom Severity (1-10)' 'Mood Score (1-10)'
+ 'Sleep Quality (1-10)' 'Physical Activity (hrs/week)'
+ 'Treatment Start Date' 'Treatment Duration (weeks)' 'Stress Level (1-10)'
+ 'Treatment Progress (1-10)' 'Adherence to Treatment (%)' 'Gender_male'
+ 'Diagnosis_Generalized Anxiety' 'Diagnosis_Major Depressive Disorder'
+ 'Diagnosis_Panic Disorder' 'Medication_Antipsychotics'
+ 'Medication_Anxiolytics' 'Medication_Benzodiazepines'
+ 'Medication_Mood Stabilizers' 'Medication_SSRIs'
+ 'Therapy Type_Dialectical Behavioral Therapy'
+ 'Therapy Type_Interpersonal Therapy'
+ 'Therapy Type_Mindfulness-Based Therapy' 'Outcome_Improved'
+ 'Outcome_No Change' 'AI-Detected Emotional State_Depressed'
+ 'AI-Detected Emotional State_Excited' 'AI-Detected Emotional State_Happy'
+ 'AI-Detected Emotional State_Neutral']
 
 # Manual mappings used during training
 gender_map = {"Male": 0, "Female": 1, "Other": 2}

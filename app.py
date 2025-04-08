@@ -1,37 +1,82 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import joblib
 
-# Load model
+# Load the trained model
 model = joblib.load("mental_health_model.pkl")
 
-st.title("🧠 Mental Health Chatbot")
+# Set up the Streamlit app
+st.set_page_config(page_title="Mental Health Checker", layout="centered")
+st.title("🧠 Mental Health Stress Detection")
+st.write("Predict if a person is **Stressed** or **Not Stressed** based on their responses.")
 
-# Input
-name = st.text_input("What is your name?")
-age = st.number_input("Your age:", min_value=10, max_value=100)
-work_interfere = st.selectbox("Do you feel your mental health interferes with your work?", ['Never', 'Rarely', 'Sometimes', 'Often'])
-benefits = st.selectbox("Does your employer provide mental health benefits?", ['Yes', 'No', "Don't know"])
+# Input fields
+age = st.slider("Age", 15, 100, 25)
+gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+self_employed = st.selectbox("Are you self-employed?", ["Yes", "No"])
+family_history = st.selectbox("Family history of mental illness?", ["Yes", "No"])
+work_interfere = st.selectbox("Does your mental health interfere with work?", ["Never", "Rarely", "Sometimes", "Often"])
+no_employees = st.selectbox("Company size", ["1-5", "6-25", "26-100", "100-500", "500-1000", "More than 1000"])
+remote_work = st.selectbox("Do you work remotely?", ["Yes", "No"])
+tech_company = st.selectbox("Is it a tech company?", ["Yes", "No"])
+benefits = st.selectbox("Does your employer provide mental health benefits?", ["Yes", "No", "Don't know"])
+care_options = st.selectbox("Are care options available?", ["Yes", "No", "Not sure"])
+wellness_program = st.selectbox("Is there a wellness program?", ["Yes", "No", "Don't know"])
+seek_help = st.selectbox("Does your employer encourage help-seeking?", ["Yes", "No", "Don't know"])
+anonymity = st.selectbox("Is anonymity protected?", ["Yes", "No", "Don't know"])
+leave = st.selectbox("Ease of taking mental health leave", ["Very easy", "Somewhat easy", "Don't know", "Somewhat difficult", "Very difficult"])
+mental_health_consequence = st.selectbox("Consequences of discussing mental health", ["Yes", "No", "Maybe"])
+phys_health_consequence = st.selectbox("Consequences of discussing physical health", ["Yes", "No", "Maybe"])
+coworkers = st.selectbox("Can you talk to coworkers about mental health?", ["Yes", "No", "Some of them"])
+supervisor = st.selectbox("Can you talk to your supervisor?", ["Yes", "No", "Some of them"])
+mental_health_interview = st.selectbox("Willing to discuss mental health in interview?", ["Yes", "No", "Maybe"])
+phys_health_interview = st.selectbox("Willing to discuss physical health in interview?", ["Yes", "No", "Maybe"])
+mental_vs_physical = st.selectbox("Should mental & physical health be treated the same?", ["Yes", "No", "Don't know"])
+obs_consequence = st.selectbox("Seen negative consequences of mental health disclosure?", ["Yes", "No"])
+comments_length = st.slider("Number of words in optional comments", 0, 500, 10)
 
-# Manual encoding (based on your training preprocessing)
-work_interfere_map = {'Never': 0, 'Rarely': 1, 'Sometimes': 2, 'Often': 3}
-benefits_map = {'Yes': 1, 'No': 0, "Don't know": 2}
+# Encode inputs (Label Encoding as per your preprocessing)
+mapping = {
+    "Yes": 1, "No": 0, "Other": 2, "Male": 1, "Female": 0,
+    "Don't know": 2, "Not sure": 2, "Maybe": 2, "Some of them": 2,
+    "Never": 0, "Rarely": 1, "Sometimes": 2, "Often": 3,
+    "Very easy": 0, "Somewhat easy": 1, "Don't know": 2,
+    "Somewhat difficult": 3, "Very difficult": 4,
+    "1-5": 0, "6-25": 1, "26-100": 2, "100-500": 3,
+    "500-1000": 4, "More than 1000": 5
+}
 
-# Transform input to numerical
-work_interfere_val = work_interfere_map[work_interfere]
-benefits_val = benefits_map[benefits]
+input_list = [age,
+              mapping.get(gender, 2),
+              mapping[self_employed],
+              mapping[family_history],
+              mapping[work_interfere],
+              mapping[no_employees],
+              mapping[remote_work],
+              mapping[tech_company],
+              mapping[benefits],
+              mapping[care_options],
+              mapping[wellness_program],
+              mapping[seek_help],
+              mapping[anonymity],
+              mapping[leave],
+              mapping[mental_health_consequence],
+              mapping[phys_health_consequence],
+              mapping[coworkers],
+              mapping[supervisor],
+              mapping[mental_health_interview],
+              mapping[phys_health_interview],
+              mapping[mental_vs_physical],
+              mapping[obs_consequence],
+              comments_length
+             ]
 
-# Add more preprocessing if needed
+# Convert input to DataFrame
+data = pd.DataFrame([input_list])
 
-if st.button("Submit"):
-    data = pd.DataFrame([[age, work_interfere_val, benefits_val]], 
-                        columns=['Age', 'work_interfere', 'benefits'])
-
+# Predict
+if st.button("Predict"):
     prediction = model.predict(data)[0]
-    
-    st.write(f"Hello {name}, based on your responses, our system predicts: **{prediction}**")
-
-    # Append data to CSV
-    data['Prediction'] = prediction
-    data.to_csv("new_user_data.csv", mode='a', header=False, index=False)
-
+    result = "Stressed" if prediction == 1 else "Not Stressed"
+    st.success(f"🧾 Prediction: The person is **{result}**.")

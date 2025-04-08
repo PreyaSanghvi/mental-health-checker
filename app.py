@@ -82,7 +82,13 @@ columns = ['Age', 'Gender', 'self_employed', 'family_history', 'work_interfere',
 data = pd.DataFrame([input_list], columns=columns)
 
 # Predict
+# Predict
 if st.button("Predict"):
+    st.write("Input Data:")
+    st.write(data)
+    st.write("Any NaNs?", data.isnull().sum())
+
     prediction = model.predict(data)[0]
     result = "Stressed" if prediction == 1 else "Not Stressed"
     st.success(f"🧾 Prediction: The person is **{result}**.")
+

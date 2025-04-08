@@ -5,7 +5,7 @@ import joblib
 # Load the trained model
 model = joblib.load("mental_health_model.pkl")
 
-# Define expected column order
+# Define expected column order (same as during training)
 expected_columns = [
     'Age', 'Gender', 'Occupation', 'Sleep Duration', 'Quality of Sleep',
     'Physical Activity Level', 'Stress Level', 'Heart Rate', 'Daily Steps',
@@ -15,7 +15,7 @@ expected_columns = [
     'AI-Detected Emotional State_Sad'
 ]
 
-# Manual label encoders (used during training)
+# Manual mappings used during training
 gender_map = {"Male": 0, "Female": 1, "Other": 2}
 occupation_map = {"Student": 0, "Working Professional": 1, "Unemployed": 2, "Other": 3}
 bmi_map = {"Underweight": 0, "Normal": 1, "Overweight": 2, "Obese": 3}
@@ -25,9 +25,9 @@ esteem_map = {"Low": 0, "Moderate": 1, "High": 2}
 family_map = {"No": 0, "Yes": 1}
 support_map = {"Low": 0, "Moderate": 1, "High": 2}
 
-st.title("Mental Health Checker")
+st.title("🧠 Mental Health Checker")
 
-# Collect user inputs
+# Input form
 with st.form("mental_health_form"):
     age = st.number_input("Age", min_value=1, max_value=100)
     gender = st.selectbox("Gender", list(gender_map.keys()))
@@ -50,14 +50,14 @@ with st.form("mental_health_form"):
     submit = st.form_submit_button("Check My Mental Health")
 
 if submit:
-    # One-hot encode emotional state
+    # One-hot encoding for emotional state
     emotional_state_dict = {
         'AI-Detected Emotional State_Calm': 1 if emotional_state == "Calm" else 0,
         'AI-Detected Emotional State_Happy': 1 if emotional_state == "Happy" else 0,
         'AI-Detected Emotional State_Sad': 1 if emotional_state == "Sad" else 0
     }
 
-    # Prepare the input dictionary
+    # User input as dictionary
     input_data = {
         'Age': age,
         'Gender': gender_map[gender],
@@ -78,20 +78,18 @@ if submit:
         **emotional_state_dict
     }
 
-    # Convert input to DataFrame
+    # Convert to DataFrame
     input_df = pd.DataFrame([input_data])
 
-    # Align columns and fill missing
-    input_df = input_df.reindex(columns=expected_columns)
-    input_df = input_df.fillna(0)
-
-    # Final safety check for column order
-    missing_cols = set(expected_columns) - set(input_df.columns)
-    for col in missing_cols:
-        input_df[col] = 0
+    # Ensure correct order and no missing columns
+    for col in expected_columns:
+        if col not in input_df.columns:
+            input_df[col] = 0
     input_df = input_df[expected_columns]
 
-    # Prediction
-    prediction = model.predict(input_df)[0]
-
-    st.success(f"Predicted Mental Health State: **{prediction}**")
+    try:
+        prediction = model.predict(input_df)[0]
+        st.success(f"✅ Predicted Mental Health State: **{prediction}**")
+    except Exception as e:
+        st.error("⚠️ Prediction failed. Details:")
+        st.error(str(e))

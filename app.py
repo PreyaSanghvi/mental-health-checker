@@ -74,9 +74,22 @@ if submit:
     # Align with expected model input
     input_df = input_df.reindex(columns=expected_columns)
     input_df = input_df.fillna(0)
+# Reindex input_df with expected columns
+input_df = input_df.reindex(columns=expected_columns)
 
-    # Make prediction
-    prediction = model.predict(input_df)[0]
+# FILL any missing values just in case
+input_df = input_df.fillna(0)
+
+# Ensure all columns exist (add if missing due to form mismatch)
+missing_cols = set(expected_columns) - set(input_df.columns)
+for col in missing_cols:
+    input_df[col] = 0
+
+# Check column order again
+input_df = input_df[expected_columns]
+
+# Now prediction
+prediction = model.predict(input_df)[0]
 
     st.success(f"Predicted Mental Health State: **{prediction}**")
 

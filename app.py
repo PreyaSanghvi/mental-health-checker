@@ -22,8 +22,8 @@ expected_columns = [
 
 # Streamlit app
 st.set_page_config(page_title="Mental Health Checker", layout="centered")
-st.title("🧠 Mental Health Prediction")
-st.markdown("Fill out the form below to receive insights about your mental health progress.")
+st.title("Therapy Progress status Form")
+st.markdown("Fill out the form below to receive insights about your mental health progress on the ongoing treatement .")
 
 with st.form("mental_health_form"):
     age = st.number_input("Age", 1, 100)
@@ -42,7 +42,7 @@ with st.form("mental_health_form"):
     medications = st.multiselect("Medications", ["Antipsychotics", "Anxiolytics", "Benzodiazepines", "Mood Stabilizers", "SSRIs"])
     therapy = st.selectbox("Therapy Type", ["Dialectical Behavioral Therapy", "Interpersonal Therapy", "Mindfulness-Based Therapy"])
     outcome = st.selectbox("Outcome", ["Improved", "No Change", "Worsened"])
-    emotion = st.selectbox("AI-Detected Emotional State", ["Depressed", "Excited", "Happy", "Neutral"])
+    emotion = st.selectbox("Emotional State", ["Depressed", "Excited", "Happy", "Neutral"])
     submit = st.form_submit_button("Check My Mental Health")
 
 if submit:
@@ -85,7 +85,7 @@ if submit:
         input_data[outcome_key] = 1
 
     # Set emotional state
-    emotion_key = f"Emotional State_{emotion}"
+    emotion_key = f"AI-Detected Emotional State_{emotion}"
     if emotion_key in input_data:
         input_data[emotion_key] = 1
 

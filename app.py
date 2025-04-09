@@ -85,7 +85,7 @@ if submit:
         input_data[outcome_key] = 1
 
     # Set emotional state
-    emotion_key = f"AI-Detected Emotional State_{emotion}"
+    emotion_key = f"Emotional State_{emotion}"
     if emotion_key in input_data:
         input_data[emotion_key] = 1
 
